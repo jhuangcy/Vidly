@@ -1,0 +1,54 @@
+﻿@*@model Vidly2.Models.Customer*@
+@model Vidly2.ViewModels.CustomerFormVM
+@{
+    ViewBag.Title = "CustomerForm";
+}
+
+<h2>
+    @(Model.Customer == null ? "New" : "Edit")
+    Customer
+</h2>
+
+@*@using (Html.BeginForm("Create", "Customers"))*@
+@using (Html.BeginForm("Save", "Customers"))
+{
+    @Html.AntiForgeryToken()
+
+    // the params will make it show our custom msg instead of listing each field error
+    @Html.ValidationSummary(true, "Please fix the following errors.")
+
+    @Html.HiddenFor(m => m.Customer.Id)
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Customer.Name)
+        @Html.TextBoxFor(m => m.Customer.Name, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Customer.Name)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Customer.MembershipTypeId)
+        @Html.DropDownListFor(m => m.Customer.MembershipTypeId, new SelectList(Model.MembershipTypes, "Id", "Name"), "Select Membership Type", new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Customer.MembershipTypeId)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Customer.Birthdate)
+        @*<label for="Birthdate">Date of Birth</label>*@
+        @Html.TextBoxFor(m => m.Customer.Birthdate, "{0:MMMM dd yyyy}", new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Customer.Birthdate)
+    </div>
+
+    <div class="checkbox">
+        <label>
+            @Html.CheckBoxFor(m => m.Customer.IsSubscribedToNewsletter) Subscribe to Newsletter?
+        </label>
+    </div>
+
+    <button type="submit" class="btn btm-primary">Save</button>
+}
+
+@section scripts {
+    @* enables client side validation, so no round trip to the server if it fails *@
+    @* data annotations are also used by jquery, but custom validation attributes will not work *@
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -1,0 +1,43 @@
+﻿@*@model List<Vidly2.Models.Movie>*@
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Movies</h2>
+
+<table id="movies" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Movie</th>
+            <th>Genre</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ 
+            /* @foreach (var m in Model)
+            {
+                <tr>
+                    @*<td>@m.Name</td>*@
+                    @*<td>@Html.ActionLink(m.Name, "Details", "Movies", new { id = m.Id }, null)</td>*@
+                    <td>@Html.ActionLink(m.Name, "Edit", "Movies", new { id = m.Id }, null)</td>
+                    <td>@m.Genre.Name</td>
+                </tr>
+            } */
+        }
+    </tbody>
+</table>
+
+@section scripts {
+    <script>
+        const table = $('#movies').DataTable({
+            ajax: { url: '/api/movies', dataSrc: '' },
+            columns: [
+                {
+                    data: 'name',
+                    render: (data, type, m) => `<a href="/movies/details/${m.id}">${data}</a>`
+                },
+                { data: 'genre.name' }
+            ]
+        })
+    </script>
+}

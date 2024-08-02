@@ -1,0 +1,93 @@
+﻿@*@model List<Vidly2.Models.Customer>*@
+@{
+    ViewBag.Title = "Customers";
+}
+
+<div style="display: flex; justify-content: space-between; align-items: end">
+    <h2>Customers</h2>
+    <p>@Html.ActionLink("New Customer", "Create", "Customers", null, new { @class = "btn btn-success" })</p>
+</div>
+
+@*@if (Model.Count == 0)
+{
+    <p>We don't have any customers yet'.</p>
+}
+else
+{*@
+    <table id="customers" class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                @*<th>Discount Rate</th>*@
+                <th>Membership Type</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ 
+                // this is not needed anymore if using datable to get data from api
+                /* @foreach (var c in Model)
+                {
+                    <tr>
+                        @*<td>@Html.ActionLink(c.Name, "Details", "Customers", new { id = c.Id }, null)</td>*@
+                        <td>@Html.ActionLink(c.Name, "Edit", "Customers", new { id = c.Id }, null)</td>
+                        @*<td>@c.MembershipType.DiscountRate%</td>*@
+                        <td>@c.MembershipType.Name</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm delete" data-customer-id="@c.Id">Delete</button>
+                        </td>
+                    </tr>
+                } */
+            }
+        </tbody>
+    </table>
+@*}*@
+
+@section scripts {
+    <script>
+        // if manually rendering content from the server using foreach, by default this already works, but bad performance if data grows
+        //$('#customers').DataTable()
+
+        // call an api to get only data and let datatable generate the table rows instead
+        const table = $('#customers').DataTable({
+            ajax: { url: '/api/customers', dataSrc: '' },
+            columns: [
+                {
+                    data: 'name',
+                    render: (data, type, c) => `<a href="/customers/edit/${c.id}">${data}</a>`
+                },
+                { data: 'membershipType.name' },
+                {
+                    data: 'id',
+                    render: (data) => `<button class="btn btn-danger btn-sm delete" data-customer-id="${data}">Delete</button>`
+                }
+            ]
+        })
+
+        //$('#customers .delete').on('click', function ()
+        $('#customers').on('click', '.delete', function ()
+        {
+            //confirm('Are you sure?')
+            //{
+            //    $.ajax({
+            //        url: '/api/customers/' + $(this).attr('data-customer-id'),
+            //        method: 'delete',
+            //        success: () => $(this).parents('tr').remove()
+            //    })
+            //}
+
+            bootbox.confirm('Are you sure?', (result) =>
+            {
+                if (result)
+                {
+                    $.ajax({
+                        url: '/api/customers/' + $(this).attr('data-customer-id'),
+                        method: 'delete',
+                        //success: () => $(this).parents('tr').remove()
+                        success: () => table.row($(this).parents('tr')).remove().draw()
+                    })
+                }
+            })
+        })
+    </script>
+}

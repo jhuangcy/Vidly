@@ -1,0 +1,115 @@
+﻿
+@{
+    ViewBag.Title = "New Rental";
+}
+
+<h2>New Rental</h2>
+
+<form id="rentals">
+    <div class="form-group">
+        <label>Customer</label>
+        <div class="my-container">
+            <input type="text" name="customer" id="customer" class="form-control" data-rule-validCustomer="true" required />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Movie</label>
+        <div class="my-container">
+            <input type="text" name="movie" id="movie" class="form-control" data-rule-validMovie="true" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 col-sm-4">
+            <ul id="movies" class="list-group">
+            </ul>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        let vm = { movieIds: [] }
+
+        // for customers
+        const customers = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                url: '/api/customers?query=%QUERY',
+                wildcard: '%QUERY'
+            }
+        });
+
+        $('#customer').typeahead({ minLength: 3, highlight: true }, { name: 'customers', display: 'name', source: customers }).on('typeahead:select', (e, customer) =>
+        {
+            vm.customerId = customer.id
+        });
+
+        // for movies
+        const movies = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                url: '/api/movies?query=%QUERY',
+                wildcard: '%QUERY'
+            }
+        });
+
+        $('#movie').typeahead({ minLength: 3, highlight: true }, { name: 'movies', display: 'name', source: movies }).on('typeahead:select', (e, movie) =>
+        {
+            vm.movieIds.push(movie.id)
+            $('#movies').append(`<li class="list-group-item">${movie.name}</li>`)
+            $('#movie').typeahead('val', '')
+        });
+
+        // form submit
+        //$('#rentals').submit((e) =>
+        //{
+        //    e.preventDefault()
+
+        //    $.ajax({
+        //        url: '/api/rentals',
+        //        method: 'post',
+        //        data: vm
+        //    })
+        //    .done(() => toastr.success('Rentals successfully recorded.'))
+        //    .fail(() => toastr.error('Something unexpected happened.'))
+        //})
+
+        // custom validators
+        $.validator.addMethod('validCustomer', () => vm.customerId && vm.customerId !== 0, 'Please select a valid customer')
+        $.validator.addMethod('validMovie', () => vm.movieIds.length > 0, 'Please select a valid movie')
+
+        // validate & submit
+        const validator = $('#rentals').validate({
+            submitHandler: () =>
+            {
+                $.ajax({
+                    url: '/api/rentals',
+                    method: 'post',
+                    data: vm
+                })
+                    .done(() =>
+                    {
+                        toastr.success('Rentals successfully recorded.')
+                        $('#customer').typeahead('val', '')
+                        $('#movies').empty()
+                        vm = { movieIds: [] }
+                        validator.resetForm()
+                    })
+                    .fail((err) => {
+                        console.log(err)
+                        toastr.error('Something unexpected happened.')
+                    })
+
+                return false    // way to prevent default submit here
+            }
+        })
+    </script>
+}

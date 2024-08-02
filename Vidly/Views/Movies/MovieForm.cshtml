@@ -1,0 +1,50 @@
+﻿@model Vidly2.ViewModels.MovieFormVM
+@{
+    ViewBag.Title = "MovieForm";
+}
+
+<h2>
+    @(Model.Id == null ? "New" : "Edit")
+    Movie
+</h2>
+
+@using (Html.BeginForm("Save", "Movies"))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.ValidationSummary(true, "Please fix the following errors.")
+
+    // init the id field here instead of the controller, but this uses a magic string
+    @*@Html.Hidden("Movie.Id", Model.Movie == null ? 0 : Model.Movie.Id)*@
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Name)
+        @Html.TextBoxFor(m => m.Name, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Name)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.ReleaseDate)
+        @Html.TextBoxFor(m => m.ReleaseDate, "{0:MMMM dd yyyy}", new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.ReleaseDate)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.GenreId)
+        @Html.DropDownListFor(m => m.GenreId, new SelectList(Model.Genres, "Id", "Name"), "Select Genre", new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.GenreId)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.NumberInStock)
+        @Html.TextBoxFor(m => m.NumberInStock, new { @type = "number", @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.NumberInStock)
+    </div>
+
+    <button type="submit" class="btn btm-primary">Save</button>
+}
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -1,0 +1,66 @@
+﻿@*@model List<Vidly2.Models.Movie>*@
+@{
+    ViewBag.Title = "Index";
+}
+
+<div style="display: flex; justify-content: space-between; align-items: end">
+    <h2>Movies</h2>
+    <p>@Html.ActionLink("New Movie", "Create", "Movies", null, new { @class = "btn btn-success" })</p>
+</div>
+
+<table id="movies" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Movie</th>
+            <th>Genre</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ 
+            /* @foreach (var m in Model)
+            {
+                <tr>
+                    @*<td>@m.Name</td>*@
+                    @*<td>@Html.ActionLink(m.Name, "Details", "Movies", new { id = m.Id }, null)</td>*@
+                    <td>@Html.ActionLink(m.Name, "Edit", "Movies", new { id = m.Id }, null)</td>
+                    <td>@m.Genre.Name</td>
+                </tr>
+            } */
+        }
+    </tbody>
+</table>
+
+@section scripts {
+    <script>
+        const table = $('#movies').DataTable({
+            ajax: { url: '/api/movies', dataSrc: '' },
+            columns: [
+                {
+                    data: 'name',
+                    render: (data, type, m) => `<a href="/movies/edit/${m.id}">${data}</a>`
+                },
+                { data: 'genre.name' },
+                {
+                    data: 'id',
+                    render: (data) => `<button class="btn btn-danger btn-sm delete" data-movie-id="${data}">Delete</button>`
+                }
+            ]
+        })
+
+        $('#movies').on('click', '.delete', function ()
+        {
+            bootbox.confirm('Are you sure?', (result) =>
+            {
+                if (result)
+                {
+                    $.ajax({
+                        url: '/api/movies/' + $(this).attr('data-movie-id'),
+                        method: 'delete',
+                        success: () => table.row($(this).parents('tr')).remove().draw()
+                    })
+                }
+            })
+        })
+    </script>
+}
